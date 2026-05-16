@@ -53,6 +53,15 @@ class WebScraperService
             throw new \InvalidArgumentException('Blocked request: missing host.');
         }
 
+        // Si le host est directement une IP, on la valide sans passer par DNS
+        if (filter_var($host, FILTER_VALIDATE_IP) !== false) {
+            if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+                throw new \InvalidArgumentException("Blocked request: '{$host}' is a disallowed IP address.");
+            }
+
+            return;
+        }
+
         $ip = gethostbyname($host);
 
         if ($ip === $host) {
